@@ -231,7 +231,7 @@ public class TicketToRideImport extends TextImportJavaSource
         String state = record.get( Fields.STUDENT_CITY.ordinal() );
         String zipCode = record.get( Fields.STUDENT_ZIP_CODE.ordinal() );
 
-        address.setAddressLine01(streetAddressLine1)
+        address.setAddressLine01(streetAddressLine1);
         address.setAddressLine02(streetAddressLine2);
         address.setCity(city);
         address.setState(state);
