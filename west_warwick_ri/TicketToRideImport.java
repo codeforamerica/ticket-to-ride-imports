@@ -306,10 +306,10 @@ public class TicketToRideImport extends TextImportJavaSource
     private void setEnrollmentFields(StudentEnrollment enrollment)
     {
         //TODO What should these fields be type be?
-        enrollment.setEnrollmentType("E");
+        enrollment.setEnrollmentType("E"); // PREREG
         enrollment.setEnrollmentDate( new PlainDate() ); //Sets to today
-        enrollment.setSchoolOid(((SisSchool) getSchool()).getOid());
-        enrollment.setStatusCode(m_statusCode);
+        enrollment.setSchoolOid("ONLINEREG"); //ONLINEREG// set to holding school
+        enrollment.setStatusCode("Active");
         enrollment.setYog(enrollment.getStudent().getYog());
         
         modelBroker.saveBeanForced(enrollment);
