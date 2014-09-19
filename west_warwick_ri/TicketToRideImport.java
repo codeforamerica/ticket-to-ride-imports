@@ -197,7 +197,7 @@ public class TicketToRideImport extends TextImportJavaSource
 
         // Student address fields
         SisAddress address = (SisAddress) X2BaseBean.newInstance(SisAddress.class, getBroker().getPersistenceKey());
-        setAddressFields(address, record);
+        setStudentAddressFields(address, record);
         
         // Student name and phone fields
         SisPerson person = (SisPerson) X2BaseBean.newInstance(SisPerson.class, getBroker().getPersistenceKey());
