@@ -2,11 +2,22 @@ package org.codeforamerica.tickettoride;
 
 // Wild card imports (lifted from example import --- TODO this is a bad coding practice, if we can narrow the classes, let's do it) 
 import java.util.*;
-import org.apache.ojb.broker.query.*;
+import org.apache.ojb.broker.query.*; //TODO Apache OJB is retired as of 2011
 import com.x2dev.sis.model.beans.*;
 import com.follett.fsc.core.k12.beans.*;
 import com.x2dev.sis.model.business.dictionary.*;
 import com.follett.fsc.core.k12.business.dictionary.*;
+
+// Added from wild card imports
+import com.x2dev.sis.model.beans.SisStudent;
+import com.x2dev.sis.model.beans.SisPerson;
+
+import com.follett.fsc.core.k12.business.ModelBroker;
+import com.follett.fsc.core.k12.beans.X2BaseBean;
+
+import org.apache.ojb.broker.query.Criteria;
+import org.apache.ojb.broker.query.QueryByCriteria;
+
 
 // Specific imports
 import java.io.File;
@@ -20,8 +31,10 @@ import com.x2dev.utils.types.PlainDate;
 /**
  * <p>This job imports a new student and 3-4 contact people.</p>
  *
- * <p>The import job is based on the Concord-Carlise 12 Data import job, created by X2,
- * but has been heavily modified.</p>
+ * <p>
+ *   The import job is based on the Concord-Carlise 12 Data import job, created by X2,
+ *   but has been modified.
+ * </p>
  *
  * <p>The import script takes the following arguments:</p>
  * <ul>
@@ -33,7 +46,8 @@ import com.x2dev.utils.types.PlainDate;
 public class TicketToRideImport extends TextImportJavaSource
 {        
     /*    
-     * CSV fields, along with the destination Aspen table and field name
+     * CSV fields in the Ticket to RIDE export file
+     * Use *.ordinal() method to get column index number
      */
     private enum Fields
     {
@@ -177,124 +191,111 @@ public class TicketToRideImport extends TextImportJavaSource
     /**
      * @see com.x2dev.sis.tools.imports.TextImportJavaSource#importRecord(java.util.List, int)
      */
-    protected void importRecord(List record, int lineNumber) throws Exception
+    protected void importRecord(List<String> record, int lineNumber) throws Exception
     {
-        /*
-         * Check if the record represents a new student, create beans if necessary
-         */
-        Criteria criteria = new Criteria();
-        criteria.addEqualTo(SisStudent.COL_STATE_ID, record.get(INDEX_SASID));
-        
-        QueryByCriteria query = new QueryByCriteria(SisStudent.class, criteria);
-        SisStudent student = (SisStudent) getBroker().getBeanByQuery(query);
-        if (student == null)
-        {
-            SisAddress address = (SisAddress) X2BaseBean.newInstance(SisAddress.class, getBroker().getPersistenceKey());
-            SisPerson person = (SisPerson) X2BaseBean.newInstance(SisPerson.class, getBroker().getPersistenceKey());
-            student = (SisStudent) X2BaseBean.newInstance(SisStudent.class, getBroker().getPersistenceKey());
-            
-            student.setHonorRollIncludeIndicator(true);
+        //TODO Check with Toni on what would consitute an existing student (if anything, do null check on student)
 
-            setAddressFields(address, record);
-            
-            person.setPhysicalAddressOid(address.getOid());
-            setPersonFields(person, record);
-            
-            student.setPersonOid(person.getOid());
-            setStudentFields(student, record);
-            
-            StudentEnrollment enrollment = (StudentEnrollment) X2BaseBean.newInstance(StudentEnrollment.class, getBroker().getPersistenceKey());
-            enrollment.setStudentOid(student.getOid());
-            setEnrollmentFields(enrollment);
-            
-            incrementInsertCount();
-        }
-        else
-        {
-            SisPerson person = (SisPerson) student.getPerson();
-            SisAddress address =  (SisAddress) (person.getPhysicalAddress());
-            
-            setAddressFields(address, record);
-            setPersonFields(person, record);
-            setStudentFields(student, record);
-            
-            incrementMatchCount();
-            incrementUpdateCount();
-        }
+        // Student address fields
+        SisAddress address = (SisAddress) X2BaseBean.newInstance(SisAddress.class, getBroker().getPersistenceKey());
+        setAddressFields(address, record);
+        
+        // Student name and phone fields
+        SisPerson person = (SisPerson) X2BaseBean.newInstance(SisPerson.class, getBroker().getPersistenceKey());
+        person.setPhysicalAddressOid(address.getOid());
+        setPersonFields(person, record);
+        
+        // Student grade level and some enrollment statuses
+        SisStudent student = (SisStudent) X2BaseBean.newInstance(SisStudent.class, getBroker().getPersistenceKey());
+        student.setPersonOid(person.getOid());
+        setStudentFields(student, record);
+        
+        StudentEnrollment enrollment = (StudentEnrollment) X2BaseBean.newInstance(StudentEnrollment.class, getBroker().getPersistenceKey());
+        enrollment.setStudentOid(student.getOid());
+        setEnrollmentFields(enrollment);
+        
+        incrementInsertCount();
     }
 
     /**
-     * Returns the numeric value for the given grade level.
+     * Populate the student's address fields based on the record
      * 
-     * @param gradeLevel
-     * 
-     * @return int
+     * @param address A new SisAddress
+     * @param record A record
      */
-    private int getGradeOffset(String gradeLevel)
+    private void setStudentAddressFields(SisAddress address, List<String> record)
     {
-        HashMap stateToOffsetCodes = null;
-        
-        DataDictionary dictionary = DataDictionary.getDistrictDictionary(getBroker().getPersistenceKey());
-        DataDictionaryField field = 
-            dictionary.findDataDictionaryField(SisStudent.class.getName(), SisStudent.COL_GRADE_LEVEL);
-        
-        if (field.hasReferenceTable())
-        {
-            Collection codes = field.getReferenceTable().getReferenceCodes();
-            stateToOffsetCodes = new HashMap((int) (codes.size() * 1.5));
-            Iterator codeIterator = codes.iterator();
-            
-            while (codeIterator.hasNext())
-            {
-                ReferenceCode code = (ReferenceCode) codeIterator.next();
-                if (!StringUtils.isEmpty(code.getStateCode()))
-                {
-                    stateToOffsetCodes.put(code.getStateCode(), code.getFieldA005());
-                }
-            }
-        }
-        
-        String yogOffset = (String) stateToOffsetCodes.get(gradeLevel);
-        
-        int gradeOffset = 4;
-        
-        if (StringUtils.isNumeric(yogOffset))
-        {
-            gradeOffset = Integer.parseInt(yogOffset);
-        }
-        
-        return gradeOffset;
+
+        String streetAddressLine1 = record.get( Fields.STUDENT_STREET_ADDRESS_1.ordinal() );
+        String streetAddressLine2 = record.get( Fields.STUDENT_STREET_ADDRESS_2.ordinal() );
+        String city = record.get( Fields.STUDENT_CITY.ordinal() );
+        String state = record.get( Fields.STUDENT_CITY.ordinal() );
+        String zipCode = record.get( Fields.STUDENT_ZIP_CODE.ordinal() );
+
+        address.setAddressLine01(streetAddressLine1)
+        address.setAddressLine02(streetAddressLine2);
+        address.setCity(city);
+        address.setState(state);
+        address.setPostalCode(zipCode);
+
+        modelBroker.saveBeanForced(address);
     }
 
     /**
-     * Sets the address fields as given by the input.
+     * Sets the student's name and phone fields
      * 
-     * @param address
+     * @param person An SisPerson object
+     * @param record CSV row
+     */
+    private void setPersonFields(SisPerson person, List<String> record)
+    {
+        // Student name
+        String firstName = record.get( Fields.STUDENT_FIRST_NAME );
+        String middleName = record.get( Fields.STUDENT_MIDDLE_NAME );
+        String lastName = record.get( Fields.STUDENT_LAST_NAME );
+
+        person.setFirstName( firstName );
+        person.setMiddleName( middleName );
+        person.setLastName( lastName );
+
+
+        // Use the phone number from the primary contact (phone1 is the only required one in Ticket to RIDE)
+        String phone1 = record.get( Fields.CONTACT_PERSON_1_PHONE_1 );
+        String phone2 = record.get( Fields.CONTACT_PERSON_1_PHONE_2 );
+        String phone3 = record.get( Fields.CONTACT_PERSON_1_PHONE_3 );
+
+        person.setPhone01( phone1 );
+        
+        if( StringUtils.isEmpty(phone2) )
+        {
+            person.setPhone02( phone2 );
+        }
+
+        if( StringUtils.isEmpty(phone3) )
+        {
+            person.setPhone03( phone3 );
+        }
+
+        modelBroker.saveBeanForced(person);
+    }
+
+    /**
+     * Sets the student fields as given by the input.
+     * 
+     * @param student
      * @param record
      */
-    private void setAddressFields(SisAddress address, List record)
+    private void setStudentFields(SisStudent student, List<String> record)
     {
-        if (address != null)
-        {
-//          Commented out following line because it generated an error for Carlisle import, 4/13/11
-//            address.setOrganization1Oid(((SisOrganization) getOrganization()).getRootOrganzation().getOid());
-            
-            String streetNumber = (String) record.get(INDEX_STREET_NUMBER);
-            String streetName = (String) record.get(INDEX_STREET_NAME);
-            
-            String line1 = streetNumber + " " + streetName;
-            AddressParser.parseLine01((SisOrganization) getOrganization(), line1, address, true, getBroker());
-            
-            address.setAddressLine02((String) record.get(INDEX_ADDRESS_LINE2));
-            
-            address.setCity((String) record.get(INDEX_CITY));
-            address.setState((String) record.get(INDEX_STATE));
-            address.setPostalCode((String) record.get(INDEX_ZIP));
-
-            address.setAddressLine03(AddressParser.format((SisOrganization) getOrganization(), 3, null, address, getBroker()));
-            
-            m_modelBroker.saveBeanForced(address);
-        }
+        student.setSchoolOid(((SisSchool) getSchool()).getOid());
+        student.setNextSchoolOid(((SisSchool) getSchool()).getOid());
+        // student.setEnrollmentStatus(m_statusCode); //TODO what should this be?
+        // student.setEnrollmentTypeCode("Carlisle");
+        // student.setStateId((String) record.get(INDEX_SASID));
+        
+        student.setYog(2026); //TODO filler
+        student.setGradeLevel(1); //TODO filler (but what value would kindergarten be?)
+        
+        modelBroker.saveBeanForced(student);
     }
     
     /**
@@ -304,60 +305,13 @@ public class TicketToRideImport extends TextImportJavaSource
      */
     private void setEnrollmentFields(StudentEnrollment enrollment)
     {
+        //TODO What should these fields be type be?
         enrollment.setEnrollmentType("E");
-        enrollment.setEnrollmentDate(m_date);
+        enrollment.setEnrollmentDate( new PlainDate() ); //Sets to today
         enrollment.setSchoolOid(((SisSchool) getSchool()).getOid());
         enrollment.setStatusCode(m_statusCode);
         enrollment.setYog(enrollment.getStudent().getYog());
         
-        m_modelBroker.saveBeanForced(enrollment);
-    }
-    
-    /**
-     * Sets the person fields as given by the input.
-     * 
-     * @param person
-     * @param record
-     */
-    private void setPersonFields(SisPerson person, List record)
-    {
-        if (person != null)
-        {
-//          Commented out following line because it generated an error for Carlisle import, 4/13/11
-//            person.setOrganization1Oid(((SisOrganization) getOrganization()).getRootOrganzation().getOid());
-            person.setFirstName((String) record.get(INDEX_FIRST_NAME));
-            person.setLastName((String) record.get(INDEX_LAST_NAME));
-            person.setPhone01((String) record.get(INDEX_PHONE));
-            
-            m_modelBroker.saveBeanForced(person);
-        }
-    }
-    
-    /**
-     * Sets the student fields as given by the input.
-     * 
-     * @param student
-     * @param record
-     */
-    private void setStudentFields(SisStudent student, List record)
-    {
-        if (student != null)
-        {
-//          Commented out following line because it generated an error for Carlisle import, 4/13/11
-//           student.setOrganization1Oid(((SisOrganization) getOrganization()).getRootOrganzation().getOid());
-            student.setSchoolOid(((SisSchool) getSchool()).getOid());
-            student.setNextSchoolOid(((SisSchool) getSchool()).getOid());
-            student.setEnrollmentStatus(m_statusCode);
-            student.setEnrollmentTypeCode("Carlisle");
-            student.setStateId((String) record.get(INDEX_SASID));
-            
-            String gradeLevel = (String) record.get(INDEX_GRADE);
-            int numericEquivalent = getGradeOffset(gradeLevel);
-            student.setYog(((SisOrganization) getOrganization()).getCurrentContext().getSchoolYear() + 12 - numericEquivalent);
-            student.setGradeLevel(gradeLevel);
-            
-            student.setFieldC001((String) record.get(INDEX_PARENTS));
-            m_modelBroker.saveBeanForced(student);
-        }
+        modelBroker.saveBeanForced(enrollment);
     }
 }
