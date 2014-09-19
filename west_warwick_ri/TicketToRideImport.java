@@ -288,8 +288,8 @@ public class TicketToRideImport extends TextImportJavaSource
     {
         student.setSchoolOid("ONLINEREG");
         student.setNextSchoolOid("ONLINEREG");
-        // student.setEnrollmentStatus(m_statusCode); //TODO what should this be?
-        // student.setEnrollmentTypeCode("Carlisle");
+        student.setEnrollmentStatus("Active"); //TODO what should this be?
+        student.setEnrollmentTypeCode("Enrolled");
         // student.setStateId((String) record.get(INDEX_SASID));
         
         student.setYog(2026); //TODO filler
