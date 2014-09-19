@@ -286,8 +286,8 @@ public class TicketToRideImport extends TextImportJavaSource
      */
     private void setStudentFields(SisStudent student, List<String> record)
     {
-        student.setSchoolOid(((SisSchool) getSchool()).getOid());
-        student.setNextSchoolOid(((SisSchool) getSchool()).getOid());
+        student.setSchoolOid("ONLINEREG");
+        student.setNextSchoolOid("ONLINEREG");
         // student.setEnrollmentStatus(m_statusCode); //TODO what should this be?
         // student.setEnrollmentTypeCode("Carlisle");
         // student.setStateId((String) record.get(INDEX_SASID));
