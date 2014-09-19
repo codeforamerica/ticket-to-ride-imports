@@ -4,7 +4,7 @@ Import jobs for loading [CSV data](https://github.com/codeforamerica/ticket-to-r
 
 ## Project Structure
 
-- `sis_notes`: Contains notes about installing and/or running import scripts on variables student information systems
+- `sis_notes`: Contains notes about installing and/or running import scripts on the different student information systems
 - `(school name)`: There's a folder for each school that we're working with. Inside each folder are the import scripts and any additional instructions.
 
 ## SIS
