@@ -249,9 +249,9 @@ public class TicketToRideImport extends TextImportJavaSource
     private void setPersonFields(SisPerson person, List<String> record)
     {
         // Student name
-        String firstName = record.get( Fields.STUDENT_FIRST_NAME );
-        String middleName = record.get( Fields.STUDENT_MIDDLE_NAME );
-        String lastName = record.get( Fields.STUDENT_LAST_NAME );
+        String firstName = record.get( Fields.STUDENT_FIRST_NAME.ordinal() );
+        String middleName = record.get( Fields.STUDENT_MIDDLE_NAME.ordinal() );
+        String lastName = record.get( Fields.STUDENT_LAST_NAME.ordinal() );
 
         person.setFirstName( firstName );
         person.setMiddleName( middleName );
@@ -259,9 +259,9 @@ public class TicketToRideImport extends TextImportJavaSource
 
 
         // Use the phone number from the primary contact (phone1 is the only required one in Ticket to RIDE)
-        String phone1 = record.get( Fields.CONTACT_PERSON_1_PHONE_1 );
-        String phone2 = record.get( Fields.CONTACT_PERSON_1_PHONE_2 );
-        String phone3 = record.get( Fields.CONTACT_PERSON_1_PHONE_3 );
+        String phone1 = record.get( Fields.CONTACT_PERSON_1_PHONE_1.ordinal() );
+        String phone2 = record.get( Fields.CONTACT_PERSON_1_PHONE_2.ordinal() );
+        String phone3 = record.get( Fields.CONTACT_PERSON_1_PHONE_3.ordinal() );
 
         person.setPhone01( phone1 );
         
@@ -293,7 +293,7 @@ public class TicketToRideImport extends TextImportJavaSource
         // student.setStateId((String) record.get(INDEX_SASID));
         
         student.setYog(2026); //TODO filler
-        student.setGradeLevel(1); //TODO filler (but what value would kindergarten be?)
+        student.setGradeLevel("1"); //TODO filler (but what value would kindergarten be?)
         
         modelBroker.saveBeanForced(student);
     }
