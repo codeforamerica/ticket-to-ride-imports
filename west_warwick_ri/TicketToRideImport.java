@@ -36,11 +36,6 @@ import com.x2dev.utils.types.PlainDate;
  *   but has been modified.
  * </p>
  *
- * <p>The import script takes the following arguments:</p>
- * <ul>
- *  <li>school_id: The ID of the school students should be assigned to</li> 
- * </ul>
- *
  * @author Code for America
  */
 public class TicketToRideImport extends TextImportJavaSource
