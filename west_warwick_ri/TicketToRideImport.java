@@ -176,8 +176,6 @@ public class TicketToRideImport extends TextImportJavaSource
         // Initialize the model broker, which helps get things from the database
         modelBroker = new ModelBroker(getPrivilegeSet());
 
-        // Get configuration parameters
-        schoolId = (String) getParameter("school_id");
     
         // Do the import!
         super.importData(sourceFile);
@@ -283,7 +281,7 @@ public class TicketToRideImport extends TextImportJavaSource
     {
         student.setSchoolOid("ONLINEREG");
         student.setNextSchoolOid("ONLINEREG");
-        student.setEnrollmentStatus("Active"); //TODO what should this be?
+        // student.setEnrollmentStatus("Active"); //TODO Does this need to be specified?
         student.setEnrollmentTypeCode("Enrolled");
         // student.setStateId((String) record.get(INDEX_SASID));
         
@@ -300,12 +298,15 @@ public class TicketToRideImport extends TextImportJavaSource
      */
     private void setEnrollmentFields(StudentEnrollment enrollment)
     {
-        //TODO What should these fields be type be?
         enrollment.setEnrollmentType("E"); // PREREG
         enrollment.setEnrollmentDate( new PlainDate() ); //Sets to today
         enrollment.setSchoolOid("ONLINEREG"); //ONLINEREG// set to holding school
-        enrollment.setStatusCode("Active");
+        // enrollment.setStatusCode("Active");
         enrollment.setYog(enrollment.getStudent().getYog());
+
+        // TODO what is the reason code?
+        enrollment.setReasonCode();
+
         
         modelBroker.saveBeanForced(enrollment);
     }
