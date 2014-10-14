@@ -305,7 +305,7 @@ public class TicketToRideImport extends TextImportJavaSource
         enrollment.setYog(enrollment.getStudent().getYog());
 
         // TODO what is the reason code?
-        enrollment.setReasonCode();
+        enrollment.setReasonCode("Enrolled");
 
         
         modelBroker.saveBeanForced(enrollment);
