@@ -285,7 +285,7 @@ public class TicketToRideImport extends TextImportJavaSource
         student.setSchoolOid(SCHOOL_ID);
         student.setNextSchoolOid(SCHOOL_ID);
         // student.setEnrollmentStatus("Active"); //TODO Does this need to be specified?
-        student.setEnrollmentTypeCode("Enrolled");
+        student.setEnrollmentTypeCode("Enrolled"); //TODO What is this value?
         
         student.setYog(2026); //TODO filler
         student.setGradeLevel("1"); //TODO filler (but what value would kindergarten be? 0, 1, other? pre-kindergarten?)
@@ -302,13 +302,12 @@ public class TicketToRideImport extends TextImportJavaSource
     {
         enrollment.setEnrollmentType("E"); // PREREG
         enrollment.setEnrollmentDate( new PlainDate() ); //Sets to today
-        enrollment.setSchoolOid("ONLINEREG"); //ONLINEREG// set to holding school
+        enrollment.setSchoolOid(SCHOOL_ID); //ONLINEREG// set to holding school
         // enrollment.setStatusCode("Active");
         enrollment.setYog(enrollment.getStudent().getYog());
 
         // TODO what is the reason code?
         enrollment.setReasonCode("Enrolled");
-
         
         modelBroker.saveBeanForced(enrollment);
     }
