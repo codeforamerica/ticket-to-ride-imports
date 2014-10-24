@@ -155,10 +155,14 @@ public class TicketToRideImport extends TextImportJavaSource
     }
 
     /*
+     * Contants
+     */ 
+    private static final String SCHOOL_ID = "SKL000000L2Dt8";
+
+    /*
      * Objects used across methods
      */
     ModelBroker modelBroker = null; // populated in the `importData` method 
-    String schoolId = null; // populated in the `importData` method
     
     /**
      * @see com.x2dev.sis.tools.imports.TextImportJavaSource#getFieldCount()
@@ -176,7 +180,6 @@ public class TicketToRideImport extends TextImportJavaSource
         // Initialize the model broker, which helps get things from the database
         modelBroker = new ModelBroker(getPrivilegeSet());
 
-    
         // Do the import!
         super.importData(sourceFile);
     }
@@ -279,14 +282,13 @@ public class TicketToRideImport extends TextImportJavaSource
      */
     private void setStudentFields(SisStudent student, List<String> record)
     {
-        student.setSchoolOid("ONLINEREG");
-        student.setNextSchoolOid("ONLINEREG");
+        student.setSchoolOid(SCHOOL_ID);
+        student.setNextSchoolOid(SCHOOL_ID);
         // student.setEnrollmentStatus("Active"); //TODO Does this need to be specified?
         student.setEnrollmentTypeCode("Enrolled");
-        // student.setStateId((String) record.get(INDEX_SASID));
         
         student.setYog(2026); //TODO filler
-        student.setGradeLevel("1"); //TODO filler (but what value would kindergarten be?)
+        student.setGradeLevel("1"); //TODO filler (but what value would kindergarten be? 0, 1, other? pre-kindergarten?)
         
         modelBroker.saveBeanForced(student);
     }
