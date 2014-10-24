@@ -24,4 +24,39 @@ Procedures are tasks that can be kicked off either manually or automatically. Th
 1. Upload/paste source code for import job (XML or Java)
 1. Upload/paste input XML for import job
 1. Create new procedure
-1. Configure time interval for which it'll run  
+1. Configure time interval for which it'll run 
+
+## Identifying Fields (or, Where data goes in the database)
+
+1. Find a template that has the data you're looking for
+1. Get the template name
+1. Bring up the template in the template editor
+
+
+## Get template name
+
+If there's a screen in Aspen and you want to see where the information it collects goes into the database, you first need to know the name of the template. To get this, navigate to the screen and then pluck this information from the address bar.
+
+![Template name in the address bar](aspen_template_id.png)
+
+## Bring up the template in the template editor
+
+1. Tools (top nav)
+1. Templates (side nav)
+1. CTRL+F (Win) or CMD+F (Mac)
+1. Enter the template name
+1. Click the name of the template
+1. Design (side sub nav under Templates)
+
+## See what template field maps to in database
+
+In the template editor, hover your mouse over the desired field and click Edit. The pop-up window will display the Table and Field.
+
+
+## Lookup a table or field in the data dictionary
+
+1. Admin (top nav)
+1. Data Dictionary or Tables (side left nav, the name changes depending on the current view)
+1. (Click on the table you want)
+1. Fields (side left nav)
+
