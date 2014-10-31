@@ -189,8 +189,6 @@ public class TicketToRideImport extends TextImportJavaSource
      */
     protected void importRecord(List<String> record, int lineNumber) throws Exception
     {
-        //TODO Check with Toni on what would consitute an existing student (if anything, do null check on student)
-
         // Student address fields
         SisAddress address = (SisAddress) X2BaseBean.newInstance(SisAddress.class, getBroker().getPersistenceKey());
         setStudentAddressFields(address, record);
@@ -253,7 +251,6 @@ public class TicketToRideImport extends TextImportJavaSource
         person.setMiddleName( middleName );
         person.setLastName( lastName );
 
-
         // Use the phone number from the primary contact (phone1 is the only required one in Ticket to RIDE)
         String phone1 = record.get( Fields.CONTACT_PERSON_1_PHONE_1.ordinal() );
         String phone2 = record.get( Fields.CONTACT_PERSON_1_PHONE_2.ordinal() );
@@ -284,11 +281,11 @@ public class TicketToRideImport extends TextImportJavaSource
     {
         student.setSchoolOid(SCHOOL_ID);
         student.setNextSchoolOid(SCHOOL_ID);
-        // student.setEnrollmentStatus("Active"); //TODO Does this need to be specified?
+        student.setEnrollmentStatus("Active"); //TODO Does this need to be specified?
         student.setEnrollmentTypeCode("Enrolled"); //TODO What is this value?
         
         student.setYog(2026); //TODO filler
-        student.setGradeLevel("1"); //TODO filler (but what value would kindergarten be? 0, 1, other? pre-kindergarten?)
+        student.setGradeLevel("01"); //TODO filler (but what value would kindergarten be? 0, 1, other? pre-kindergarten?)
         
         modelBroker.saveBeanForced(student);
     }
@@ -300,13 +297,11 @@ public class TicketToRideImport extends TextImportJavaSource
      */
     private void setEnrollmentFields(StudentEnrollment enrollment)
     {
-        enrollment.setEnrollmentType("E"); // PREREG
+        enrollment.setEnrollmentType("E"); 
         enrollment.setEnrollmentDate( new PlainDate() ); //Sets to today
-        enrollment.setSchoolOid(SCHOOL_ID); //ONLINEREG// set to holding school
-        // enrollment.setStatusCode("Active");
+        enrollment.setSchoolOid(SCHOOL_ID);
+        enrollment.setStatusCode("Active");
         enrollment.setYog(enrollment.getStudent().getYog());
-
-        // TODO what is the reason code?
         enrollment.setReasonCode("Enrolled");
         
         modelBroker.saveBeanForced(enrollment);
